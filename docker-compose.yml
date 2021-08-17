@@ -1,0 +1,27 @@
+version: '3'
+services:
+  database:
+    image: "postgres" # use latest official postgres version
+    ports: 
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=sample
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+    volumes:
+      - ./migration:/docker-entrypoint-initdb.d
+      - ./.volumes:/var/lib/postgresql/data # persist data even if container shuts down
+  pgweb:
+    container_name: pgweb
+    restart: always
+    image: sosedoff/pgweb
+    ports: 
+        - "8081:8081"
+    links: 
+        - database:database
+    environment:
+        - DATABASE_URL=postgres://user:pass@database:5432/sample?sslmode=disable
+    depends_on:
+        - database
+volumes:
+  database-data: # named volumes can be managed easier using docker-compose
